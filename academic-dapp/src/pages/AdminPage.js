@@ -25,7 +25,7 @@ function AdminPage() {
           className={activeTab === "professors" ? "active" : ""}
           onClick={() => setActiveTab("professors")}
         >
-          Professors
+          Professors/Modules
         </button>
 
         <button
