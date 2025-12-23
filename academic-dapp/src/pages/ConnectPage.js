@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import "./Page.css";
 
-const CONTRACT_ADDRESS = "0xd78738fA839A78c417Ec7414d91ed5456ACF9C13";
+const CONTRACT_ADDRESS = "0x670EC683C06fFCF0ea7D1bF5F6386429B23320E6";
 const ABI = [
 	{
 		"inputs": [],

@@ -21,4 +21,34 @@
   button:hover {
     background-color: #4338ca;
   }
+  .admin-page {
+    width: 80%;
+    margin: auto;
+    text-align: center;
+  }
+  
+  .tabs {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+  
+  .tabs button {
+    padding: 10px 20px;
+    margin: 0 5px;
+    border: none;
+    cursor: pointer;
+    background-color: #ddd;
+  }
+  
+  .tabs button.active {
+    background-color: #4caf50;
+    color: white;
+  }
+  
+  .tab-content {
+    border: 1px solid #ccc;
+    padding: 20px;
+    border-radius: 5px;
+  }
   
