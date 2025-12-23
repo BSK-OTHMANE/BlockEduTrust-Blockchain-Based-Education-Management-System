@@ -10,6 +10,7 @@ function ProfessorsTab() {
   ============================ */
   const [professors, setProfessors] = useState([]);
   const [expandedProf, setExpandedProf] = useState(null);
+  const [addOpen, setAddOpen] = useState(true);
 
   // Add professor
   const [newProfAddress, setNewProfAddress] = useState("");
@@ -182,141 +183,182 @@ function ProfessorsTab() {
       {/* ============================
             1️⃣ ADD PROFESSOR
       ============================ */}
-      <div style={{ marginBottom: "25px" }}>
-        <h4>Add Professor</h4>
-        <input
-          placeholder="Professor address"
-          value={newProfAddress}
-          onChange={(e) => setNewProfAddress(e.target.value)}
-        />
-        <input
-          placeholder="Professor name"
-          value={newProfName}
-          onChange={(e) => setNewProfName(e.target.value)}
-        />
-        <input
-          placeholder="Professor email"
-          value={newProfEmail}
-          onChange={(e) => setNewProfEmail(e.target.value)}
-        />
-        <button onClick={handleAddProfessor} disabled={profLoading}>
-          {profLoading ? "Adding..." : "Add Professor"}
-        </button>
+      <div className="card">
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:12}}>
+          <h4 style={{margin:0}}>Add Professor</h4>
+          <div>
+            <button className="btn-ghost" onClick={()=>setAddOpen(!addOpen)}>{addOpen? 'Collapse' : 'Expand'}</button>
+          </div>
+        </div>
+
+        {addOpen && (
+          <div className="form-row" style={{marginTop:12}}>
+            <input
+              placeholder="Professor address"
+              value={newProfAddress}
+              onChange={(e) => setNewProfAddress(e.target.value)}
+            />
+            <input
+              placeholder="Professor name"
+              value={newProfName}
+              onChange={(e) => setNewProfName(e.target.value)}
+            />
+            <input
+              placeholder="Professor email"
+              value={newProfEmail}
+              onChange={(e) => setNewProfEmail(e.target.value)}
+            />
+            <button className="btn-primary" onClick={handleAddProfessor} disabled={profLoading}>
+              {profLoading ? "Adding..." : "Add Professor"}
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* ============================
-            1️⃣ LIST PROFESSORS
-      ============================ */}
-      {professors.map((prof) => {
-        const profModules = modules.filter(
-          (m) => m.professor.toLowerCase() === prof.address.toLowerCase()
-        );
+        {/* ============================
+              SHOW PROFESSORS (visualization)
+        ============================ */}
+        <div style={{marginTop:18}}>
+          <h4>All Professors</h4>
+          <div className="prof-grid">
+            {professors.map((prof) => {
+              const profModules = modules.filter(
+                (m) => m.professor.toLowerCase() === prof.address.toLowerCase()
+              );
 
-        const freeModules = modules.filter(
-          (m) => m.professor === ethers.ZeroAddress
-        );
+              const freeModules = modules.filter((m) => m.professor === ethers.ZeroAddress);
 
-        return (
-          <div
-            key={prof.address}
-            style={{
-              border: "1px solid #ccc",
-              padding: "10px",
-              marginBottom: "15px"
-            }}
-          >
-            <div
-              style={{ cursor: "pointer", fontWeight: "bold" }}
-              onClick={() =>
-                setExpandedProf(
-                  expandedProf === prof.address ? null : prof.address
-                )
-              }
-            >
-              {prof.name} — {prof.address}
-            </div>
+              const initials = (prof.name || 'P').split(' ').map(s=>s[0]).slice(0,2).join('').toUpperCase();
 
-            {/* ============================
-                  2️⃣ ASSIGNMENT INSIDE PROFESSOR
-            ============================ */}
-            {expandedProf === prof.address && (
-              <div style={{ marginTop: "10px" }}>
-                <h4>Assigned Modules</h4>
+              return (
+                <div key={prof.address} className="prof-card">
+                  <div className="prof-head">
+                    <div className="avatar">{initials}</div>
+                    <div className="prof-meta">
+                      <div className="prof-name">Name: {prof.name}</div>
+                      <div className="prof-address">Address: {prof.address}</div>
+                    </div>
+                  </div>
 
-                {profModules.length === 0 && <p>No modules assigned</p>}
+                  <div className="prof-stats">
+                    <div className="stat">Modules: {profModules.length}</div>
+                  </div>
 
-                {profModules.map((mod) => (
-                  <div key={mod.id}>
-                    #{Number(mod.id)} — {mod.name}
-                    <button
-                      style={{ marginLeft: "10px" }}
-                      onClick={() => unassignModule(mod.id)}
-                    >
-                      Unassign
+                  <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+                    {profModules.slice(0,3).map((m)=> (
+                      <div key={m.id} className="module-chip-mini">#{Number(m.id)} {m.name}</div>
+                    ))}
+
+                    {profModules.length>3 && (
+                      <div className="module-chip-mini">+{profModules.length-3} more</div>
+                    )}
+                  </div>
+
+                  <div style={{display:'flex',justifyContent:'flex-end',gap:8}}>
+                    <button className="btn-ghost" onClick={()=>setExpandedProf(expandedProf===prof.address?null:prof.address)}>
+                      {expandedProf===prof.address? 'Hide' : 'Details'}
+                    </button>
+                    <button className="btn-primary" onClick={()=>{ setExpandedProf(prof.address); }}>
+                      Manage
                     </button>
                   </div>
-                ))}
 
-                <hr />
+                  {expandedProf === prof.address && (
+                    <div className="card" style={{ marginTop: "12px" }}>
+                      <h4 style={{marginTop:0}}>Assigned Modules</h4>
 
-                <h4>Assign New Module</h4>
-                <select
-                  value={selectedModules[prof.address] || ""}
-                  onChange={(e) =>
-                    setSelectedModules({
-                      ...selectedModules,
-                      [prof.address]: e.target.value
-                    })
-                  }
-                >
-                  <option value="">Select module</option>
-                  {freeModules.map((mod) => (
-                    <option key={mod.id} value={mod.id.toString()}>
-                      #{Number(mod.id)} — {mod.name}
-                    </option>
-                  ))}
-                </select>
+                      {profModules.length === 0 && <p>No modules assigned</p>}
 
-                <button
-                  style={{ marginLeft: "10px" }}
-                  onClick={() => assignModule(prof.address)}
-                >
-                  Assign
-                </button>
-              </div>
-            )}
+                      {profModules.map((mod) => (
+                        <div key={mod.id} className="module-chip">
+                          <div className="module-left">
+                            <div className="module-id">#{Number(mod.id)}</div>
+                            <div className="module-name">{mod.name}</div>
+                          </div>
+
+                          <div className="module-actions">
+                            <button className="btn-ghost" onClick={() => unassignModule(mod.id)}>
+                              Unassign
+                            </button>
+                            <button className="btn-danger" onClick={() => unassignModule(mod.id)} title="Remove module">
+                              Delete
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+
+                      <hr />
+
+                      <h4 style={{marginBottom:8}}>Assign New Module</h4>
+                      <div className="form-row" style={{alignItems:'center'}}>
+                        <div style={{flex:1,display:'flex',gap:12}}>
+                          <select
+                            value={selectedModules[prof.address] || ""}
+                            onChange={(e) =>
+                              setSelectedModules({
+                                ...selectedModules,
+                                [prof.address]: e.target.value
+                              })
+                            }
+                          >
+                            <option value="">Select module to assign</option>
+                            {freeModules.map((mod) => (
+                              <option key={mod.id} value={mod.id.toString()}>
+                                #{Number(mod.id)} — {mod.name}
+                              </option>
+                            ))}
+                          </select>
+                          <small style={{color:'var(--muted)',alignSelf:'center'}}>Free modules: {freeModules.length}</small>
+                        </div>
+
+                        <button
+                          className="btn-primary"
+                          onClick={() => assignModule(prof.address)}
+                          disabled={!selectedModules[prof.address]}
+                          title={!selectedModules[prof.address] ? 'Select a module first' : 'Assign module'}
+                        >
+                          Assign
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
           </div>
-        );
-      })}
+        </div>
+
+      {/* Professors grid above is the single source of truth for professor cards. */}
 
       {/* ============================
             3️⃣ MODULE MANAGEMENT
       ============================ */}
-      <div style={{ marginTop: "30px", borderTop: "2px solid #ccc" }}>
+      <div style={{ marginTop: "30px", borderTop: "2px solid #ccc", paddingTop: '18px' }}>
         <h3>Modules</h3>
 
-        <input
-          placeholder="Module name"
-          value={newModuleName}
-          onChange={(e) => setNewModuleName(e.target.value)}
-        />
-        <button onClick={handleAddModule} disabled={moduleLoading}>
-          {moduleLoading ? "Creating..." : "Create Module"}
-        </button>
+        <div className="card">
+          <div className="form-row">
+            <input
+              placeholder="Module name"
+              value={newModuleName}
+              onChange={(e) => setNewModuleName(e.target.value)}
+            />
+            <button className="btn-primary" onClick={handleAddModule} disabled={moduleLoading}>
+              {moduleLoading ? "Creating..." : "Create Module"}
+            </button>
+          </div>
 
-        <ul>
-          {modules.map((mod) => (
-            <li key={mod.id}>
-              #{Number(mod.id)} — {mod.name}
-              <button
-                style={{ marginLeft: "10px", color: "red" }}
-                onClick={() => handleRemoveModule(mod.id)}
-              >
-                Delete
-              </button>
-            </li>
-          ))}
-        </ul>
+          <ul>
+            {modules.map((mod) => (
+              <li key={mod.id}>
+                <div className="meta">#{Number(mod.id)} — {mod.name}</div>
+                <button className="btn-danger" onClick={() => handleRemoveModule(mod.id)}>
+                  Delete
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </div>
   );

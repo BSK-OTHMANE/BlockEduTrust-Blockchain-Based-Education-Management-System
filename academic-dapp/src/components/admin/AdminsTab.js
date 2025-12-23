@@ -96,32 +96,35 @@ function AdminsTab() {
       <h3>Admins</h3>
 
       {/* ADD ADMIN FORM */}
-      <div style={{ marginBottom: "20px" }}>
-        <input
-          placeholder="Admin address"
-          value={newAdminAddress}
-          onChange={(e) => setNewAdminAddress(e.target.value)}
-        />
+      <div className="card">
+        <h4>Add Admin</h4>
+        <div className="form-row">
+          <input
+            placeholder="Admin address"
+            value={newAdminAddress}
+            onChange={(e) => setNewAdminAddress(e.target.value)}
+          />
 
-        <input
-          placeholder="Admin name"
-          value={newAdminName}
-          onChange={(e) => setNewAdminName(e.target.value)}
-        />
+          <input
+            placeholder="Admin name"
+            value={newAdminName}
+            onChange={(e) => setNewAdminName(e.target.value)}
+          />
 
-        <input
-          placeholder="Admin email"
-          value={newAdminEmail}
-          onChange={(e) => setNewAdminEmail(e.target.value)}
-        />
+          <input
+            placeholder="Admin email"
+            value={newAdminEmail}
+            onChange={(e) => setNewAdminEmail(e.target.value)}
+          />
 
-        <button onClick={handleAddAdmin} disabled={loading}>
-          {loading ? "Adding..." : "Add Admin"}
-        </button>
+          <button className="btn-primary" onClick={handleAddAdmin} disabled={loading}>
+            {loading ? "Adding..." : "Add Admin"}
+          </button>
+        </div>
       </div>
 
       {/* ADMINS TABLE */}
-      <table width="100%" border="1" cellPadding="8">
+      <table className="data-table" cellPadding="8">
         <thead>
           <tr>
             <th>Name</th>
