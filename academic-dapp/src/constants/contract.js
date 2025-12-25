@@ -1,5 +1,5 @@
 
-export const CONTRACT_ADDRESS = "0x670EC683C06fFCF0ea7D1bF5F6386429B23320E6";
+export const CONTRACT_ADDRESS = "0x3DD6e096bf84D37D3026dd1720b8eD21c2F34394";
 export const ABI = [
 	{
 		"inputs": [],
@@ -68,6 +68,29 @@ export const ABI = [
 			}
 		],
 		"name": "addGrade",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_moduleId",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "_title",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "_ipfsHash",
+				"type": "string"
+			}
+		],
+		"name": "addModuleMaterial",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
@@ -358,6 +381,103 @@ export const ABI = [
 	{
 		"inputs": [
 			{
+				"internalType": "uint256",
+				"name": "_moduleId",
+				"type": "uint256"
+			}
+		],
+		"name": "getAssignmentsByModule",
+		"outputs": [
+			{
+				"components": [
+					{
+						"internalType": "uint256",
+						"name": "id",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "moduleId",
+						"type": "uint256"
+					},
+					{
+						"internalType": "string",
+						"name": "ipfsHash",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "professorPublicKey",
+						"type": "string"
+					},
+					{
+						"internalType": "uint256",
+						"name": "deadline",
+						"type": "uint256"
+					},
+					{
+						"internalType": "bool",
+						"name": "exists",
+						"type": "bool"
+					}
+				],
+				"internalType": "struct AcademicManagementSystem.Assignment[]",
+				"name": "",
+				"type": "tuple[]"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_moduleId",
+				"type": "uint256"
+			}
+		],
+		"name": "getMaterialsByModule",
+		"outputs": [
+			{
+				"components": [
+					{
+						"internalType": "uint256",
+						"name": "id",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "moduleId",
+						"type": "uint256"
+					},
+					{
+						"internalType": "string",
+						"name": "title",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "ipfsHash",
+						"type": "string"
+					},
+					{
+						"internalType": "uint256",
+						"name": "uploadedAt",
+						"type": "uint256"
+					}
+				],
+				"internalType": "struct AcademicManagementSystem.ModuleMaterial[]",
+				"name": "",
+				"type": "tuple[]"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
 				"internalType": "address",
 				"name": "_prof",
 				"type": "address"
@@ -499,6 +619,58 @@ export const ABI = [
 				"internalType": "string",
 				"name": "note",
 				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "materialCount",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "materials",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "id",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "moduleId",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "title",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "ipfsHash",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "uploadedAt",
+				"type": "uint256"
 			}
 		],
 		"stateMutability": "view",

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { ethers } from "ethers";
 import { CONTRACT_ADDRESS, ABI } from "../../constants/contract";
+import ModuleStudentsPanel from "./ModuleStudentsPanel";
 
 const API_URL = "http://127.0.0.1:8000";
 
@@ -24,6 +25,9 @@ function ProfessorsTab() {
 
   // Per-professor module selection
   const [selectedModules, setSelectedModules] = useState({});
+
+  // 👇 NEW: toggle enrolled students per module
+  const [openModuleStudents, setOpenModuleStudents] = useState({});
 
   /* ============================
         CONTRACT INSTANCE
@@ -180,7 +184,7 @@ function ProfessorsTab() {
       <h3>Professors</h3>
 
       {/* ============================
-            1️⃣ ADD PROFESSOR
+            ADD PROFESSOR
       ============================ */}
       <div style={{ marginBottom: "25px" }}>
         <h4>Add Professor</h4>
@@ -205,7 +209,7 @@ function ProfessorsTab() {
       </div>
 
       {/* ============================
-            1️⃣ LIST PROFESSORS
+            PROFESSOR LIST
       ============================ */}
       {professors.map((prof) => {
         const profModules = modules.filter(
@@ -236,9 +240,6 @@ function ProfessorsTab() {
               {prof.name} — {prof.address}
             </div>
 
-            {/* ============================
-                  2️⃣ ASSIGNMENT INSIDE PROFESSOR
-            ============================ */}
             {expandedProf === prof.address && (
               <div style={{ marginTop: "10px" }}>
                 <h4>Assigned Modules</h4>
@@ -246,14 +247,39 @@ function ProfessorsTab() {
                 {profModules.length === 0 && <p>No modules assigned</p>}
 
                 {profModules.map((mod) => (
-                  <div key={mod.id}>
+                  <div key={mod.id} style={{ marginBottom: "10px" }}>
                     #{Number(mod.id)} — {mod.name}
+
                     <button
                       style={{ marginLeft: "10px" }}
                       onClick={() => unassignModule(mod.id)}
                     >
                       Unassign
                     </button>
+
+                    <button
+                      style={{ marginLeft: "10px" }}
+                      onClick={() =>
+                        setOpenModuleStudents((prev) => ({
+                          ...prev,
+                          [mod.id]: !prev[mod.id]
+                        }))
+                      }
+                    >
+                      {openModuleStudents[mod.id]
+                        ? "Hide students"
+                        : "View students"}
+                    </button>
+
+                    {openModuleStudents[mod.id] && (
+                      <div style={{ marginTop: "10px" }}>
+                        <ModuleStudentsPanel
+  moduleId={mod.id}
+  moduleName={mod.name}
+  moduleProfessor={mod.professor}
+/>
+                      </div>
+                    )}
                   </div>
                 ))}
 
@@ -290,7 +316,7 @@ function ProfessorsTab() {
       })}
 
       {/* ============================
-            3️⃣ MODULE MANAGEMENT
+            MODULE MANAGEMENT
       ============================ */}
       <div style={{ marginTop: "30px", borderTop: "2px solid #ccc" }}>
         <h3>Modules</h3>

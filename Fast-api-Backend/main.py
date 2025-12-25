@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from routes import admin_users, admin_modules
 from fastapi.middleware.cors import CORSMiddleware
+from routes import assignments
 import uvicorn
 app = FastAPI(title="Academic Management Backend")
 
@@ -21,6 +22,12 @@ app.include_router(
     admin_modules.router,
     prefix="/admin/modules",
     tags=["Admin - Modules"]
+)
+
+app.include_router(
+    assignments.router,
+    prefix="/professor/assignments",
+    tags=["Professor - Assignments"]
 )
 
 # ========== RUN ==========

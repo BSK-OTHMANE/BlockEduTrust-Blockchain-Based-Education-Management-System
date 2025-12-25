@@ -8,3 +8,4 @@ db = client["academic_db"]
 
 users_collection = db["users"]
 modules_collection = db["modules"]  
+assignments_collection = db["assignments"]
