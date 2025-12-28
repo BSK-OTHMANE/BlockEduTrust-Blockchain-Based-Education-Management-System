@@ -5,71 +5,94 @@ import AssignmentsPanel from "./AssignmentsPanel";
 import GradesPanel from "./GradesPanel";
 
 function ModuleCard({ module }) {
-  const [activeTab, setActiveTab] = useState("materials");
+  const [expandedSections, setExpandedSections] = useState({
+    materials: true,
+    assignments: true,
+    grades: false
+  });
   const [selectedAssignmentId, setSelectedAssignmentId] = useState(null);
 
+  const toggleSection = (section) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
+
   return (
-    <div
-      style={{
-        border: "1px solid #ccc",
-        padding: "15px",
-        marginBottom: "20px"
-      }}
-    >
-      <h3>
+    <div className="module-details">
+      <h2 className="module-title">
         #{Number(module.id)} — {module.name}
-      </h3>
+      </h2>
 
-      {/* Tabs */}
-      <div className="tabs">
-        <button
-          className={activeTab === "materials" ? "active" : ""}
-          onClick={() => setActiveTab("materials")}
-        >
-          Materials
-        </button>
+      {/* Collapsible Sections */}
+      <div className="collapsible-sections">
+        {/* Materials Section */}
+        <div className="collapsible-section">
+          <button
+            className="collapsible-header"
+            onClick={() => toggleSection("materials")}
+          >
+            <span className="toggle-icon">
+              {expandedSections.materials ? "▼" : "▶"}
+            </span>
+            <span className="section-title">📚 Course Materials</span>
+          </button>
+          {expandedSections.materials && (
+            <div className="collapsible-content">
+              <MaterialsPanel moduleId={module.id} />
+            </div>
+          )}
+        </div>
 
-        <button
-          className={activeTab === "assignments" ? "active" : ""}
-          onClick={() => setActiveTab("assignments")}
-        >
-          Assignments
-        </button>
+        {/* Assignments Section */}
+        <div className="collapsible-section">
+          <button
+            className="collapsible-header"
+            onClick={() => toggleSection("assignments")}
+          >
+            <span className="toggle-icon">
+              {expandedSections.assignments ? "▼" : "▶"}
+            </span>
+            <span className="section-title">📝 Assignments</span>
+          </button>
+          {expandedSections.assignments && (
+            <div className="collapsible-content">
+              <AssignmentsPanel
+                moduleId={module.id}
+                onSelectAssignment={(id) => {
+                  setSelectedAssignmentId(id);
+                  setExpandedSections(prev => ({ ...prev, grades: true }));
+                }}
+              />
+            </div>
+          )}
+        </div>
 
-        <button
-          className={activeTab === "grades" ? "active" : ""}
-          onClick={() => setActiveTab("grades")}
-        >
-          Grades
-        </button>
-      </div>
-
-      {/* Content */}
-      <div className="tab-content">
-        {activeTab === "materials" && (
-          <MaterialsPanel moduleId={module.id} />
-        )}
-
-        {activeTab === "assignments" && (
-          <AssignmentsPanel
-            moduleId={module.id}
-            onSelectAssignment={(id) => {
-              setSelectedAssignmentId(id);
-              setActiveTab("grades"); // 🔥 auto jump to grades
-            }}
-          />
-        )}
-
-        {activeTab === "grades" && (
-          selectedAssignmentId ? (
-            <GradesPanel
-              moduleId={module.id}
-              assignmentId={selectedAssignmentId}
-            />
-          ) : (
-            <p>Please select an assignment first.</p>
-          )
-        )}
+        {/* Grades Section */}
+        <div className="collapsible-section">
+          <button
+            className="collapsible-header"
+            onClick={() => toggleSection("grades")}
+          >
+            <span className="toggle-icon">
+              {expandedSections.grades ? "▼" : "▶"}
+            </span>
+            <span className="section-title">📊 Grade Submissions</span>
+          </button>
+          {expandedSections.grades && (
+            <div className="collapsible-content">
+              {selectedAssignmentId ? (
+                <GradesPanel
+                  moduleId={module.id}
+                  assignmentId={selectedAssignmentId}
+                />
+              ) : (
+                <p className="empty-message">Please select an assignment to grade.</p>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

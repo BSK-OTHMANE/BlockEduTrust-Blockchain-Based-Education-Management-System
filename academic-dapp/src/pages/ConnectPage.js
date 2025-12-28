@@ -2,6 +2,7 @@ import { ethers } from "ethers";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { CONTRACT_ADDRESS, ABI } from "../constants/contract";
+import logo from "../BlockEduTrustLogo.png";
 import "./Page.css";
 
 // const CONTRACT_ADDRESS = "0x670EC683C06fFCF0ea7D1bF5F6386429B23320E6";
@@ -482,7 +483,7 @@ import "./Page.css";
 
 function ConnectPage() {
   const navigate = useNavigate();
-  const { setAccount, setRole } = useAuth();
+  const { setAccount, setRole, setUserName } = useAuth();
 
   async function connectWallet() {
     if (!window.ethereum) {
@@ -502,6 +503,18 @@ function ConnectPage() {
 
     const role = await contract.getRole(account);
 
+    // Fetch user name from backend
+    try {
+      const res = await fetch(`http://127.0.0.1:8000/admin/users/?role=${role == 1 ? 'ADMIN' : role == 2 ? 'PROFESSOR' : 'STUDENT'}`);
+      const users = await res.json();
+      const user = users.find(u => u.address.toLowerCase() === account.toLowerCase());
+      if (user) {
+        setUserName(user.name);
+      }
+    } catch (err) {
+      console.error("Failed to fetch user name:", err);
+    }
+
     setAccount(account);
     setRole(Number(role));
 
@@ -513,8 +526,13 @@ function ConnectPage() {
 
   return (
     <div className="center">
-      <h1>Academic Management System</h1>
-      <button onClick={connectWallet}>Connect Wallet</button>
+      <div className="center-card">
+        <img src={logo} alt="BlockEduTrust Logo" className="login-logo" />
+        <h1>BlockEduTrust</h1>
+        <p>Secure, Blockchain-Based Education Management System</p>
+        <p className="login-subtitle">Decentralized Academic Credentials on the Blockchain</p>
+        <button onClick={connectWallet} className="login-btn">Connect Wallet with MetaMask</button>
+      </div>
     </div>
   );
 }

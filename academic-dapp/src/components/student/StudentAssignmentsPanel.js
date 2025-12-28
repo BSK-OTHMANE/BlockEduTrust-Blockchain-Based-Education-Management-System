@@ -12,6 +12,7 @@ function StudentAssignmentsPanel({ moduleId }) {
   const [submissions, setSubmissions] = useState({});
   const [grades, setGrades] = useState({});
   const [loadingId, setLoadingId] = useState(null);
+  const [submissionsExpanded, setSubmissionsExpanded] = useState(true);
 
   /* ============================
         CONTRACT
@@ -128,96 +129,104 @@ function StudentAssignmentsPanel({ moduleId }) {
   ============================ */
   return (
     <div>
-      <h4>Assignments</h4>
+      <button
+        className="expandable-list-header"
+        onClick={() => setSubmissionsExpanded(!submissionsExpanded)}
+      >
+        <span className="toggle-icon">{submissionsExpanded ? "▼" : "▶"}</span>
+        <span>My Submissions ({assignments.length})</span>
+      </button>
 
-      {assignments.map((a) => {
-        const deadlinePassed =
-          Date.now() / 1000 > a.deadline;
+      {submissionsExpanded && (
+        <div className="expandable-list-content">
+          {assignments.length === 0 ? (
+            <p className="empty-message">No assignments for this module</p>
+          ) : (
+            <div className="assignments-grid">
+              {assignments.map((a) => {
+                const deadlinePassed =
+                  Date.now() / 1000 > a.deadline;
 
-        const grade = grades[a.id];
+                const grade = grades[a.id];
+                const submitted = submissions[a.id];
 
-        return (
-          <div
-            key={a.id}
-            style={{
-              border: "1px solid #ccc",
-              padding: "15px",
-              marginBottom: "15px"
-            }}
-          >
-            <strong>{a.title}</strong>
-            <br />
-            Deadline:{" "}
-            {new Date(a.deadline * 1000).toLocaleString()}
-            <br />
+                return (
+              <div key={a.id} className="assignment-item">
+                <div className="assignment-header">
+                  <span className="assignment-title">{a.title}</span>
+                  <span className={`submission-status ${submitted ? 'submitted' : 'pending'}`}>
+                    {submitted ? '✓ Submitted' : '○ Pending'}
+                  </span>
+                </div>
 
-            <a
-              href={`https://gateway.pinata.cloud/ipfs/${a.ipfsHash}`}
-              target="_blank"
-              rel="noreferrer"
-            >
-              View assignment PDF
-            </a>
+                <div className="assignment-meta">
+                  <span className="deadline">
+                    📅 Deadline: {new Date(a.deadline * 1000).toLocaleString()}
+                  </span>
+                  {deadlinePassed && (
+                    <span className="deadline-passed">Submission Closed</span>
+                  )}
+                </div>
 
-            <br /><br />
+                <a
+                  href={`https://gateway.pinata.cloud/ipfs/${a.ipfsHash}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="material-link"
+                  style={{ marginTop: "8px", display: "block" }}
+                >
+                  📄 View Assignment Details
+                </a>
 
-            {submissions[a.id] ? (
-              <p style={{ color: "green" }}>✔ Submitted</p>
-            ) : (
-              <p style={{ color: "red" }}>✖ Not submitted</p>
-            )}
+                {/* GRADE DISPLAY */}
+                {grade ? (
+                  <div className="grade-section">
+                    <strong>Your Grade:</strong> {grade.value} / 20
+                    {grade.note && (
+                      <div className="grade-note">
+                        <strong>Feedback:</strong> {grade.note}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <p className="not-graded">⏳ Waiting for grading...</p>
+                )}
 
-            {/* GRADE DISPLAY */}
-            {grade ? (
-              <div style={{ marginTop: "10px" }}>
-                <strong>Grade:</strong> {grade.value} / 20
-                <br />
-                {grade.note && (
-                  <>
-                    <strong>Note:</strong> {grade.note}
-                  </>
+                {/* SUBMISSION UI */}
+                {!deadlinePassed && (
+                  <div className="submission-section">
+                    <input
+                      type="file"
+                      accept="application/pdf"
+                      onChange={(e) =>
+                        setFiles({
+                          ...files,
+                          [a.id]: e.target.files[0]
+                        })
+                      }
+                    />
+
+                    <button
+                      onClick={() => handleSubmit(a)}
+                      disabled={loadingId === a.id}
+                      className="btn-primary"
+                      style={{ marginTop: "8px" }}
+                    >
+                      {loadingId === a.id
+                        ? "Submitting..."
+                        : submitted
+                        ? "Resubmit Assignment"
+                        : "Submit Assignment"}
+                    </button>
+                  </div>
                 )}
               </div>
-            ) : (
-              <p style={{ color: "#777" }}>Not graded yet</p>
-            )}
-
-            {/* SUBMISSION UI */}
-            {!deadlinePassed && (
-              <>
-                <input
-                  type="file"
-                  accept="application/pdf"
-                  onChange={(e) =>
-                    setFiles({
-                      ...files,
-                      [a.id]: e.target.files[0]
-                    })
-                  }
-                />
-
-                <button
-                  onClick={() => handleSubmit(a)}
-                  disabled={loadingId === a.id}
-                  style={{ marginLeft: "10px" }}
-                >
-                  {loadingId === a.id
-                    ? "Submitting..."
-                    : submissions[a.id]
-                    ? "Resubmit"
-                    : "Submit"}
-                </button>
-              </>
-            )}
-
-            {deadlinePassed && (
-              <p style={{ color: "gray" }}>
-                Submission closed
-              </p>
-            )}
-          </div>
-        );
-      })}
+            );
+          })}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

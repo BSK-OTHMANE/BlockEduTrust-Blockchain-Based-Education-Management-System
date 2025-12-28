@@ -1,46 +1,115 @@
 // src/components/student/StudentModuleCard.js
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import StudentMaterialsPanel from "./StudentMaterialsPanel";
 import StudentAssignmentsPanel from "./StudentAssignmentsPanel";
 
+const API_URL = "http://127.0.0.1:8000";
+
 function StudentModuleCard({ module }) {
-  const [activeTab, setActiveTab] = useState("materials");
+  const [expandedSections, setExpandedSections] = useState({
+    materials: true,
+    assignments: true
+  });
 
+  const [professorName, setProfessorName] = useState("Professor");
+  const [professorEmail, setProfessorEmail] = useState("");
+  const [loadingProfessor, setLoadingProfessor] = useState(true);
+
+  /* ============================
+        FETCH PROFESSOR INFO
+  ============================ */
+  useEffect(() => {
+    async function fetchProfessorInfo() {
+      try {
+        setLoadingProfessor(true);
+
+        // ✅ CORRECT ROLE (uppercase)
+        const res = await fetch(
+          `${API_URL}/admin/users?role=PROFESSOR`
+        );
+
+        const professors = await res.json();
+
+        const prof = professors.find(
+          (p) =>
+            p.address &&
+            p.address.toLowerCase() === module.professor.toLowerCase()
+        );
+
+        if (prof) {
+          setProfessorName(prof.name || "Professor");
+          setProfessorEmail(prof.email || "");
+        }
+      } catch (err) {
+        console.error("Failed to fetch professor info:", err);
+      } finally {
+        setLoadingProfessor(false);
+      }
+    }
+
+    if (module.professor && module.professor !== "0x0000000000000000000000000000000000000000") {
+      fetchProfessorInfo();
+    }
+  }, [module.professor]);
+
+  /* ============================
+        TOGGLE SECTIONS
+  ============================ */
+  function toggleSection(section) {
+    setExpandedSections((prev) => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  }
+
+  /* ============================
+        RENDER
+  ============================ */
   return (
-    <div
-      style={{
-        border: "1px solid #ccc",
-        padding: "15px",
-        marginBottom: "20px"
-      }}
-    >
-      <h3>
+    <div className="module-details">
+      <h2 className="module-title">
         #{Number(module.id)} — {module.name}
-      </h3>
+      </h2>
 
-      <div className="tabs">
+      <p className="module-professor">
+        Instructor:{" "}
+        <strong>
+          {loadingProfessor ? "Loading..." : professorName}
+        </strong>
+        {professorEmail && (
+          <span className="professor-email"> • {professorEmail}</span>
+        )}
+      </p>
+
+      {/* Materials */}
+      <div className="collapsible-section">
         <button
-          className={activeTab === "materials" ? "active" : ""}
-          onClick={() => setActiveTab("materials")}
+          className="collapsible-header"
+          onClick={() => toggleSection("materials")}
         >
-          Materials
+          {expandedSections.materials ? "▼" : "▶"} 📚 Course Materials
         </button>
 
-        <button
-          className={activeTab === "assignments" ? "active" : ""}
-          onClick={() => setActiveTab("assignments")}
-        >
-          Assignments
-        </button>
+        {expandedSections.materials && (
+          <div className="collapsible-content">
+            <StudentMaterialsPanel moduleId={module.id} />
+          </div>
+        )}
       </div>
 
-      <div className="tab-content">
-        {activeTab === "materials" && (
-          <StudentMaterialsPanel moduleId={module.id} />
-        )}
+      {/* Assignments */}
+      <div className="collapsible-section">
+        <button
+          className="collapsible-header"
+          onClick={() => toggleSection("assignments")}
+        >
+          {expandedSections.assignments ? "▼" : "▶"} 📝 Assignments
+        </button>
 
-        {activeTab === "assignments" && (
-          <StudentAssignmentsPanel moduleId={module.id} />
+        {expandedSections.assignments && (
+          <div className="collapsible-content">
+            <StudentAssignmentsPanel moduleId={module.id} />
+          </div>
         )}
       </div>
     </div>

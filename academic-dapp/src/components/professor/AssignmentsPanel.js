@@ -14,6 +14,7 @@ function AssignmentsPanel({ moduleId, onSelectAssignment }) {
   const [file, setFile] = useState(null);
   const [deadline, setDeadline] = useState("");
   const [loading, setLoading] = useState(false);
+  const [assignmentsExpanded, setAssignmentsExpanded] = useState(true);
 
   /* ============================
         CONTRACT
@@ -160,61 +161,92 @@ function AssignmentsPanel({ moduleId, onSelectAssignment }) {
   ============================ */
   return (
     <div>
-      <h4>Assignments</h4>
+      <h4>Module Assignments</h4>
 
       {/* CREATE ASSIGNMENT */}
-      <div
-        style={{
-          border: "1px solid #ccc",
-          padding: "10px",
-          marginBottom: "15px"
-        }}
-      >
-        <input
-          placeholder="Assignment title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-        />
+      <div className="form-section">
+        <h5>Create New Assignment</h5>
+        <form onSubmit={(e) => { e.preventDefault(); handleCreateAssignment(); }}>
+          <div className="form-group">
+            <label htmlFor="assign-title">Assignment Title *</label>
+            <input
+              id="assign-title"
+              type="text"
+              placeholder="e.g., Homework #1 - Data Structures"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
+          </div>
 
-        <input
-          type="file"
-          accept="application/pdf"
-          onChange={(e) => setFile(e.target.files[0])}
-        />
+          <div className="form-group">
+            <label htmlFor="assign-file">PDF File *</label>
+            <input
+              id="assign-file"
+              type="file"
+              accept="application/pdf"
+              onChange={(e) => setFile(e.target.files[0])}
+            />
+            {file && (
+              <p className="file-info">Selected: {file.name}</p>
+            )}
+          </div>
 
-        <input
-          type="datetime-local"
-          value={deadline}
-          onChange={(e) => setDeadline(e.target.value)}
-        />
+          <div className="form-group">
+            <label htmlFor="assign-deadline">Deadline *</label>
+            <input
+              id="assign-deadline"
+              type="datetime-local"
+              value={deadline}
+              onChange={(e) => setDeadline(e.target.value)}
+            />
+          </div>
 
-        <button onClick={handleCreateAssignment} disabled={loading}>
-          {loading ? "Creating..." : "Create Assignment"}
-        </button>
+          <button type="submit" disabled={loading} className="btn-primary">
+            {loading ? "Creating..." : "Create Assignment"}
+          </button>
+          <p className="form-hint">💾 A private key file will be downloaded for grade encryption</p>
+        </form>
       </div>
 
       {/* LIST ASSIGNMENTS */}
-      {assignments.length === 0 ? (
-        <p>No assignments yet</p>
-      ) : (
-        <ul>
-          {assignments.map((a) => (
-            <li key={a.id} style={{ marginBottom: "12px" }}>
-              <strong>{a.title}</strong>
-              <br />
-              Deadline:{" "}
-              {new Date(a.deadline * 1000).toLocaleString()}
-              <br />
-              <button
-                style={{ marginTop: "5px" }}
-                onClick={() => onSelectAssignment(a.id)}
-              >
-                View Grades
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
+      <div className="content-section">
+        <button
+          className="expandable-list-header"
+          onClick={() => setAssignmentsExpanded(!assignmentsExpanded)}
+        >
+          <span className="toggle-icon">{assignmentsExpanded ? "▼" : "▶"}</span>
+          <span>Assignments List ({assignments.length})</span>
+        </button>
+        {assignmentsExpanded && (
+          <div className="expandable-list-content">
+            {assignments.length === 0 ? (
+              <p className="empty-message">No assignments created yet</p>
+            ) : (
+              <div className="assignments-grid">
+                {assignments.map((a) => (
+                  <div key={a.id} className="assignment-item">
+                    <div className="assignment-header">
+                      <span className="assignment-title">{a.title}</span>
+                    </div>
+                    <div className="assignment-meta">
+                      <span className="deadline">
+                        📅 Deadline: {new Date(a.deadline * 1000).toLocaleString()}
+                      </span>
+                    </div>
+                    <button
+                      className="btn-secondary"
+                      onClick={() => onSelectAssignment(a.id)}
+                      style={{ marginTop: "8px" }}
+                    >
+                      View & Grade Submissions
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

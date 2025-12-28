@@ -111,19 +111,28 @@ function GradesPanel({ assignmentId, moduleId }) {
   /* ============================
         DECRYPT
   ============================ */
-  function handleDecrypt(student, encryptedCid) {
-    if (!privateKey) {
-      alert("Paste the assignment private key first");
-      return;
-    }
-
-    try {
-      const cid = decryptWithPrivateKey(encryptedCid, privateKey);
-      setDecryptedCids((prev) => ({ ...prev, [student]: cid }));
-    } catch {
-      alert("Invalid private key");
-    }
+async function handleDecrypt(studentAddress, encryptedCid) {
+  if (!privateKey) {
+    alert("Please paste the private key first");
+    return;
   }
+
+  try {
+    const cid = await decryptWithPrivateKey(
+      encryptedCid,
+      privateKey
+    );
+
+    setDecryptedCids((prev) => ({
+      ...prev,
+      [studentAddress]: cid
+    }));
+  } catch (err) {
+    console.error("Decryption failed:", err);
+    alert("Invalid private key or corrupted submission");
+  }
+}
+
 
   /* ============================
         GRADE
@@ -174,121 +183,155 @@ function GradesPanel({ assignmentId, moduleId }) {
         RENDER
   ============================ */
   return (
-    <div style={{ marginTop: "15px" }}>
-      <h4>Grades — {assignmentTitle}</h4>
+    <div>
+      <h4>Grade Submissions — {assignmentTitle}</h4>
 
-      <input
-        type="password"
-        placeholder="Paste assignment private key"
-        value={privateKey}
-        onChange={(e) => setPrivateKey(e.target.value)}
-        style={{ width: "100%", marginBottom: "15px" }}
-      />
-
-      {submissions.length === 0 && <p>No submissions yet</p>}
-
-      {submissions.map((s) => {
-        const student = s.studentAddress;
-        const name =
-          studentNames[student.toLowerCase()] || student;
-        const decrypted = decryptedCids[student];
-        const isEditing = editing[student];
-
-        return (
-          <div
-            key={student}
-            style={{
-              border: "1px solid #ccc",
-              padding: "10px",
-              marginBottom: "10px"
-            }}
-          >
-            <strong>{name}</strong>
-            <br />
-            <small>{student}</small>
-
-            <div style={{ marginTop: "10px" }}>
-              {!decrypted ? (
-                <button
-                  onClick={() =>
-                    handleDecrypt(student, s.encryptedCid)
-                  }
-                >
-                  Decrypt submission
-                </button>
-              ) : (
-                <a
-                  href={`https://gateway.pinata.cloud/ipfs/${decrypted}`}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  View submission
-                </a>
-              )}
-            </div>
-
-            <div style={{ marginTop: "10px" }}>
-              <input
-                type="number"
-                min="0"
-                max="20"
-                disabled={s.graded && !isEditing}
-                value={grades[student] || ""}
-                onChange={(e) =>
-                  setGrades({
-                    ...grades,
-                    [student]: e.target.value
-                  })
-                }
-              />
-
-              <input
-                disabled={s.graded && !isEditing}
-                placeholder="Note"
-                value={notes[student] || ""}
-                onChange={(e) =>
-                  setNotes({
-                    ...notes,
-                    [student]: e.target.value
-                  })
-                }
-              />
-
-              {!s.graded ? (
-                <button
-                  onClick={() => handleGrade(student)}
-                  disabled={loading}
-                >
-                  Submit grade
-                </button>
-              ) : !isEditing ? (
-                <button
-                  onClick={() =>
-                    setEditing({ ...editing, [student]: true })
-                  }
-                >
-                  Update grade
-                </button>
-              ) : (
-                <>
-                  <button
-                    onClick={() => handleGrade(student)}
-                    disabled={loading}
-                  >
-                    Save update
-                  </button>
-                  <button
-                    onClick={() => handleCancelEdit(student)}
-                    style={{ marginLeft: "8px" }}
-                  >
-                    Cancel
-                  </button>
-                </>
-              )}
-            </div>
+      {/* Private Key Input */}
+      <div className="form-section">
+        <h5>Decrypt Submissions</h5>
+        <form onSubmit={(e) => e.preventDefault()}>
+          <div className="form-group">
+            <label htmlFor="priv-key">Assignment Private Key (JSON) *</label>
+            <textarea
+              id="priv-key"
+              placeholder="Paste the private key JSON here to decrypt submissions"
+              value={privateKey}
+              onChange={(e) => setPrivateKey(e.target.value)}
+              style={{ minHeight: "100px", fontFamily: "monospace", fontSize: "0.85rem" }}
+            />
+            <p className="form-hint">This key is needed to decrypt and view student submissions.</p>
           </div>
-        );
-      })}
+        </form>
+      </div>
+
+      {/* Submissions List */}
+      <div className="content-section">
+        <h5>Student Submissions ({submissions.length})</h5>
+        {submissions.length === 0 ? (
+          <p className="empty-message">No submissions yet</p>
+        ) : (
+          <div className="submissions-grid">
+            {submissions.map((s) => {
+              const student = s.studentAddress;
+              const name =
+                studentNames[student.toLowerCase()] || student;
+              const decrypted = decryptedCids[student];
+              const isEditing = editing[student];
+
+              return (
+                <div key={student} className="submission-card">
+                  <div className="submission-header">
+                    <span className="student-name">{name}</span>
+                    <span className={`grading-status ${s.graded ? 'graded' : 'pending'}`}>
+                      {s.graded ? '✓ Graded' : '◦ Pending'}
+                    </span>
+                  </div>
+                  
+                  <div className="submission-address">
+                    <small>{student}</small>
+                  </div>
+
+                  {/* Submission Access */}
+                  <div className="submission-action">
+                    {!decrypted ? (
+                      <button
+                        className="btn-secondary"
+                        onClick={() =>
+                          handleDecrypt(student, s.encryptedCid)
+                        }
+                      >
+                        🔓 Decrypt Submission
+                      </button>
+                    ) : (
+                      <a
+                        href={`https://gateway.pinata.cloud/ipfs/${decrypted}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="material-link"
+                      >
+                        📄 View Submission
+                      </a>
+                    )}
+                  </div>
+
+                  {/* Grading Form */}
+                  <div className="grading-form">
+                    <div className="form-group">
+                      <label>Grade (out of 20)</label>
+                      <input
+                        type="number"
+                        min="0"
+                        max="20"
+                        disabled={s.graded && !isEditing}
+                        value={grades[student] || ""}
+                        onChange={(e) =>
+                          setGrades({
+                            ...grades,
+                            [student]: e.target.value
+                          })
+                        }
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label>Feedback/Note</label>
+                      <textarea
+                        disabled={s.graded && !isEditing}
+                        placeholder="Add feedback for the student..."
+                        value={notes[student] || ""}
+                        onChange={(e) =>
+                          setNotes({
+                            ...notes,
+                            [student]: e.target.value
+                          })
+                        }
+                        style={{ minHeight: "80px" }}
+                      />
+                    </div>
+
+                    <div className="grading-buttons">
+                      {!s.graded ? (
+                        <button
+                          className="btn-primary"
+                          onClick={() => handleGrade(student)}
+                          disabled={loading}
+                        >
+                          Submit Grade
+                        </button>
+                      ) : !isEditing ? (
+                        <button
+                          className="btn-secondary"
+                          onClick={() =>
+                            setEditing({ ...editing, [student]: true })
+                          }
+                        >
+                          Update Grade
+                        </button>
+                      ) : (
+                        <div style={{ display: "flex", gap: "8px" }}>
+                          <button
+                            className="btn-primary"
+                            onClick={() => handleGrade(student)}
+                            disabled={loading}
+                          >
+                            Save Update
+                          </button>
+                          <button
+                            className="btn-danger-small"
+                            onClick={() => handleCancelEdit(student)}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

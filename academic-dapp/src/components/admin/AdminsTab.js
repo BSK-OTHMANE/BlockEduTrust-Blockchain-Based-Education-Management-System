@@ -96,55 +96,77 @@ function AdminsTab() {
       <h3>Admins</h3>
 
       {/* ADD ADMIN FORM */}
-      <div style={{ marginBottom: "20px" }}>
-        <input
-          placeholder="Admin address"
-          value={newAdminAddress}
-          onChange={(e) => setNewAdminAddress(e.target.value)}
-        />
+      <div className="form-card">
+        <h4>Add New Admin</h4>
+        <form onSubmit={(e) => { e.preventDefault(); handleAddAdmin(); }}>
+          <div className="form-group">
+            <label htmlFor="admin-address">Wallet Address *</label>
+            <input
+              id="admin-address"
+              type="text"
+              placeholder="0x742d35Cc6634C0532925a3b844Bc666B42999999"
+              value={newAdminAddress}
+              onChange={(e) => setNewAdminAddress(e.target.value)}
+            />
+          </div>
 
-        <input
-          placeholder="Admin name"
-          value={newAdminName}
-          onChange={(e) => setNewAdminName(e.target.value)}
-        />
+          <div className="form-group">
+            <label htmlFor="admin-name">Full Name *</label>
+            <input
+              id="admin-name"
+              type="text"
+              placeholder="John Doe"
+              value={newAdminName}
+              onChange={(e) => setNewAdminName(e.target.value)}
+            />
+          </div>
 
-        <input
-          placeholder="Admin email"
-          value={newAdminEmail}
-          onChange={(e) => setNewAdminEmail(e.target.value)}
-        />
+          <div className="form-group">
+            <label htmlFor="admin-email">Email Address *</label>
+            <input
+              id="admin-email"
+              type="email"
+              placeholder="john.doe@university.edu"
+              value={newAdminEmail}
+              onChange={(e) => setNewAdminEmail(e.target.value)}
+            />
+          </div>
 
-        <button onClick={handleAddAdmin} disabled={loading}>
-          {loading ? "Adding..." : "Add Admin"}
-        </button>
+          <button type="submit" disabled={loading} className="btn-primary">
+            {loading ? "Adding..." : "Add Admin"}
+          </button>
+        </form>
       </div>
 
       {/* ADMINS TABLE */}
-      <table width="100%" border="1" cellPadding="8">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Address</th>
-            <th>Email</th>
-          </tr>
-        </thead>
-        <tbody>
-          {admins.map((admin) => (
-            <tr key={admin.address}>
-              <td>{admin.name}</td>
-              <td>{admin.address}</td>
-              <td>{admin.email}</td>
-            </tr>
-          ))}
-
-          {admins.length === 0 && (
-            <tr>
-              <td colSpan="3">No admins found</td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+      <div className="table-card">
+        <h4>Admins List</h4>
+        {admins.length === 0 ? (
+          <p className="empty-message">No admins found</p>
+        ) : (
+          <table>
+            <thead>
+              <tr>
+                <th>Name & Address</th>
+                <th>Email</th>
+              </tr>
+            </thead>
+            <tbody>
+              {admins.map((admin) => (
+                <tr key={admin.address}>
+                  <td>
+                    <div className="name-with-address">
+                      <span className="primary-name">{admin.name}</span>
+                      <span className="secondary-address">{admin.address}</span>
+                    </div>
+                  </td>
+                  <td>{admin.email}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
     </div>
   );
 }

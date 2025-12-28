@@ -170,123 +170,149 @@ function StudentsTab() {
   ============================ */
   return (
     <div>
-      <h3>Students</h3>
+      <h3>Students Management</h3>
 
       {/* ADD STUDENT */}
-      <div style={{ marginBottom: "25px" }}>
-        <h4>Add Student</h4>
-        <input
-          placeholder="Student address"
-          value={newStudentAddress}
-          onChange={(e) => setNewStudentAddress(e.target.value)}
-        />
-        <input
-          placeholder="Student name"
-          value={newStudentName}
-          onChange={(e) => setNewStudentName(e.target.value)}
-        />
-        <input
-          placeholder="Student email"
-          value={newStudentEmail}
-          onChange={(e) => setNewStudentEmail(e.target.value)}
-        />
-        <button onClick={handleAddStudent} disabled={studentLoading}>
-          {studentLoading ? "Adding..." : "Add Student"}
-        </button>
+      <div className="form-card">
+        <h4>Add New Student</h4>
+        <form onSubmit={(e) => { e.preventDefault(); handleAddStudent(); }}>
+          <div className="form-group">
+            <label>Wallet Address *</label>
+            <input
+              type="text"
+              placeholder="0x742d35Cc6634C0532925a3b844Bc666B42999999"
+              value={newStudentAddress}
+              onChange={(e) => setNewStudentAddress(e.target.value)}
+            />
+          </div>
+          <div className="form-group">
+            <label>Full Name *</label>
+            <input
+              type="text"
+              placeholder="Alice Johnson"
+              value={newStudentName}
+              onChange={(e) => setNewStudentName(e.target.value)}
+            />
+          </div>
+          <div className="form-group">
+            <label>Email Address *</label>
+            <input
+              type="email"
+              placeholder="alice.johnson@student.university.edu"
+              value={newStudentEmail}
+              onChange={(e) => setNewStudentEmail(e.target.value)}
+            />
+          </div>
+          <button type="submit" disabled={studentLoading} className="btn-primary">
+            {studentLoading ? "Adding..." : "Add Student"}
+          </button>
+        </form>
       </div>
 
       {/* LIST STUDENTS */}
-      {students.map((student) => {
-        const enrolledModules = studentModules[student.address] || [];
-        const enrolledIds = enrolledModules.map((m) => Number(m.id));
+      {students.length === 0 ? (
+        <div className="empty-state-card">
+          <p>No students registered yet</p>
+        </div>
+      ) : (
+        <div className="table-card">
+          <h4>Students List</h4>
+          {students.map((student) => {
+            const enrolledModules = studentModules[student.address] || [];
+            const enrolledIds = enrolledModules.map((m) => Number(m.id));
 
-        const availableModules = modules.filter(
-          (mod) => !enrolledIds.includes(Number(mod.id))
-        );
+            const availableModules = modules.filter(
+              (mod) => !enrolledIds.includes(Number(mod.id))
+            );
 
-        return (
-          <div
-            key={student.address}
-            style={{
-              border: "1px solid #ccc",
-              padding: "10px",
-              marginBottom: "15px"
-            }}
-          >
-            <div
-              style={{ cursor: "pointer", fontWeight: "bold" }}
-              onClick={() => {
-                setExpandedStudent(
-                  expandedStudent === student.address
-                    ? null
-                    : student.address
-                );
-                fetchStudentModules(student.address);
-              }}
-            >
-              {student.name} — {student.address}
-            </div>
-
-            {expandedStudent === student.address && (
-              <div style={{ marginTop: "10px" }}>
-                <h4>Enrolled Modules</h4>
-
-                {enrolledModules.length === 0 && <p>No modules enrolled</p>}
-
-                {enrolledModules.map((mod) => (
-                  <div key={mod.id}>
-                    #{Number(mod.id)} — {mod.name}
-                    <button
-                      style={{ marginLeft: "10px" }}
-                      onClick={() =>
-                        removeStudentFromModule(student.address, mod.id)
-                      }
-                    >
-                      Remove
-                    </button>
+            return (
+              <div key={student.address} className="expandable-card">
+                <div
+                  className="expandable-header"
+                  onClick={() => {
+                    setExpandedStudent(
+                      expandedStudent === student.address
+                        ? null
+                        : student.address
+                    );
+                    fetchStudentModules(student.address);
+                  }}
+                >
+                  <span className="expand-icon">
+                    {expandedStudent === student.address ? "▼" : "▶"}
+                  </span>
+                  <div className="prof-info">
+                    <span className="prof-name">{student.name}</span>
+                    <span className="prof-address">{student.address.substring(0, 10)}...{student.address.substring(student.address.length - 8)}</span>
                   </div>
-                ))}
+                  <span className="prof-email">{student.email}</span>
+                </div>
 
-                <hr />
+                {expandedStudent === student.address && (
+                  <div className="expandable-content">
+                    <div className="section">
+                      <h5>Enrolled Modules ({enrolledModules.length})</h5>
 
-                <h4>Enroll in Module</h4>
+                      {enrolledModules.length === 0 ? (
+                        <p className="empty-message">Not enrolled in any module</p>
+                      ) : (
+                        <div className="module-list">
+                          {enrolledModules.map((mod) => (
+                            <div key={mod.id} className="module-item">
+                              <span className="module-info">#{Number(mod.id)} — {mod.name}</span>
+                              <button
+                                className="btn-danger-small"
+                                onClick={() =>
+                                  removeStudentFromModule(student.address, mod.id)
+                                }
+                              >
+                                Remove from Module
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
 
-                {availableModules.length === 0 ? (
-                  <p>Student already enrolled in all modules</p>
-                ) : (
-                  <>
-                    <select
-                      value={selectedModules[student.address] || ""}
-                      onChange={(e) =>
-                        setSelectedModules({
-                          ...selectedModules,
-                          [student.address]: e.target.value
-                        })
-                      }
-                    >
-                      <option value="">Select module</option>
-                      {availableModules.map((mod) => (
-                        <option key={mod.id} value={mod.id.toString()}>
-                          #{Number(mod.id)} — {mod.name}
-                        </option>
-                      ))}
-                    </select>
+                    <div className="section">
+                      <h5>Enroll in Module</h5>
 
-                    <button
-                      style={{ marginLeft: "10px" }}
-                      onClick={() => enrollStudent(student.address)}
-                    >
-                      Enroll
-                    </button>
-                  </>
+                      {availableModules.length === 0 ? (
+                        <p className="empty-message">Already enrolled in all modules</p>
+                      ) : (
+                        <div className="assign-module">
+                          <select
+                            value={selectedModules[student.address] || ""}
+                            onChange={(e) =>
+                              setSelectedModules({
+                                ...selectedModules,
+                                [student.address]: e.target.value
+                              })
+                            }
+                          >
+                            <option value="">Select module...</option>
+                            {availableModules.map((mod) => (
+                              <option key={mod.id} value={mod.id.toString()}>
+                                #{Number(mod.id)} — {mod.name}
+                              </option>
+                            ))}
+                          </select>
+                          <button
+                            className="btn-primary"
+                            onClick={() => enrollStudent(student.address)}
+                          >
+                            Enroll
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 )}
               </div>
-            )}
-          </div>
-        );
-      })}
-
-      {students.length === 0 && <p>No students found</p>}
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
