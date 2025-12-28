@@ -98,6 +98,33 @@ function ProfessorsTab() {
     }
   }
 
+  // ADD this function inside ProfessorsTab
+
+async function handleRemoveProfessor(e, profAddress) {
+  e.stopPropagation(); // prevent expand toggle
+
+  if (!window.confirm("Remove this professor completely?")) return;
+
+  try {
+    const contract = await getContract();
+
+    // 1️⃣ Remove role on-chain
+    const tx = await contract.removeProfessor(profAddress);
+    await tx.wait();
+
+    // 2️⃣ Remove from backend
+    await fetch(`${API_URL}/admin/users/${profAddress}`, {
+      method: "DELETE"
+    });
+
+    fetchProfessors();
+    fetchModules();
+  } catch (err) {
+    console.error(err);
+    alert("Failed to remove professor");
+  }
+}
+
   /* ============================
         MODULE MANAGEMENT
   ============================ */
@@ -249,7 +276,7 @@ function ProfessorsTab() {
                     setExpandedProf(
                       expandedProf === prof.address ? null : prof.address
                     )
-                  }
+                  }     
                 >
                   <span className="expand-icon">
                     {expandedProf === prof.address ? "▼" : "▶"}
@@ -259,6 +286,12 @@ function ProfessorsTab() {
                     <span className="prof-address">{prof.address.substring(0, 10)}...{prof.address.substring(prof.address.length - 8)}</span>
                   </div>
                   <span className="prof-email">{prof.email}</span>
+                  <button
+                    className="btn-danger-small"
+                    onClick={(e) => handleRemoveProfessor(e, prof.address)}
+                  >
+                    Remove
+                  </button>
                 </div>
 
                 {expandedProf === prof.address && (

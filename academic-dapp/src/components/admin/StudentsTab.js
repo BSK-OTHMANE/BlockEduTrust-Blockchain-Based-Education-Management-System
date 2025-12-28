@@ -120,6 +120,31 @@ function StudentsTab() {
     }
   }
 
+  async function handleRemoveStudent(e, studentAddress) {
+  e.stopPropagation(); // prevent expand toggle
+
+  if (!window.confirm("Remove this student completely?")) return;
+
+  try {
+    const contract = await getContract();
+
+    // 1️⃣ Remove role on-chain
+    const tx = await contract.removeStudent(studentAddress);
+    await tx.wait();
+
+    // 2️⃣ Remove from backend
+    await fetch(`${API_URL}/admin/users/${studentAddress}`, {
+      method: "DELETE"
+    });
+
+    fetchStudents();
+  } catch (err) {
+    console.error(err);
+    alert("Failed to remove student");
+  }
+}
+
+
   /* ============================
         ENROLL STUDENT
   ============================ */
@@ -246,6 +271,13 @@ function StudentsTab() {
                     <span className="prof-address">{student.address.substring(0, 10)}...{student.address.substring(student.address.length - 8)}</span>
                   </div>
                   <span className="prof-email">{student.email}</span>
+                  <button
+                  className="btn-danger-small"
+                  onClick={(e) => handleRemoveStudent(e, student.address)}
+                >
+                  Remove
+                </button>
+
                 </div>
 
                 {expandedStudent === student.address && (

@@ -18,11 +18,11 @@ app.include_router(
     tags=["Admin - Users"]
 )
 
-app.include_router(
-    admin_modules.router,
-    prefix="/admin/modules",
-    tags=["Admin - Modules"]
-)
+# app.include_router(
+#     admin_modules.router,
+#     prefix="/admin/modules",
+#     tags=["Admin - Modules"]
+# )
 
 app.include_router(
     assignments.router,
